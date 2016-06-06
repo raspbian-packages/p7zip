@@ -1,0 +1,5 @@
+04_no_strip_by_default.diff
+01_makefile.patch
+02_man.patch
+CVE-2015-1038.patch
+CVE-2016-2335.patch
