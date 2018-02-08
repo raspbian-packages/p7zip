@@ -1,4 +1,4 @@
-p7zip (9.20.1~dfsg.1-4+rpi2+deb7u2) wheezy-staging; urgency=medium
+p7zip (9.20.1~dfsg.1-4+rpi2+deb7u3) wheezy-staging; urgency=medium
 
   [changes brought forward from 9.20.1~dfsg.1-4+rpi1 by Mike Thompson <mpthompson@gmail.com> at Thu, 31 May 2012 23:53:29 -0700]
   * Non-maintainer upload.
@@ -9,7 +9,15 @@ p7zip (9.20.1~dfsg.1-4+rpi2+deb7u2) wheezy-staging; urgency=medium
     correct sign extension.
   * Build with gcc/g++ 4.7 to avoid internal compiler error.
 
- -- Raspbian forward porter <root@raspbian.org>  Fri, 17 Jun 2016 22:59:49 +0000
+ -- Raspbian forward porter <root@raspbian.org>  Thu, 08 Feb 2018 03:47:10 +0000
+
+p7zip (9.20.1~dfsg.1-4+deb7u3) wheezy-security; urgency=medium
+
+  * Non-maintainer upload by the LTS Security Team.
+  * CVE-2017-17969: fix Heap Buffer Overflow in ZIP Shrink support
+    (Closes: #888297)
+
+ -- Antoine Beaupré <anarcat@debian.org>  Fri, 26 Jan 2018 16:00:33 -0500
 
 p7zip (9.20.1~dfsg.1-4+deb7u2) wheezy-security; urgency=high
 
