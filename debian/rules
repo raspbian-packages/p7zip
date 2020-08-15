@@ -1,0 +1,40 @@
+#!/usr/bin/make -f
+
+DH_AUTO_OPTIONS := -v -Smakefile --parallel
+stampfile       := debian/build-stamp
+
+DEB_BUILD_MAINT_OPTIONS := hardening=+all
+DPKG_EXPORT_BUILDFLAGS  := 1
+
+include /usr/share/dpkg/buildflags.mk
+
+include /usr/share/dpkg/architecture.mk
+
+ifneq ($(DEB_HOST_GNU_TYPE),$(DEB_BUILD_GNU_TYPE))
+  CC  := $(DEB_HOST_GNU_TYPE)-gcc
+  CXX := $(DEB_HOST_GNU_TYPE)-g++
+else
+  CC  := gcc
+  CXX := g++
+endif
+
+%:
+	dh ${@}
+
+override_dh_auto_clean:
+	# Make sure patches are applied otherwise `make clean' fails
+	# on trying to clean the removed Rar directory (see #769520).
+	dpkg-source --before-build $(CURDIR)
+	dh_auto_clean $(DH_AUTO_OPTIONS)
+	rm -rf bin/ $(stampfile)
+
+override_dh_auto_build: $(stampfile)
+
+$(stampfile):
+	dh_auto_build $(DH_AUTO_OPTIONS) -- CC=$(CC) CXX=$(CXX) OPTFLAGS= all3
+	touch "$@"
+
+override_dh_auto_install:
+
+override_dh_installdocs:
+	dh_installdocs --link-doc=p7zip -Xcopying.txt -XLicense.txt -Xlicense.htm -Xfm
