@@ -1,0 +1,73 @@
+#!/usr/bin/make -f
+
+include /usr/share/dpkg/architecture.mk
+
+export DEB_BUILD_MAINT_OPTIONS=hardening=+all reproducible=+all
+
+include debian/arch-options.mak
+
+# gcc
+m = ../../cmpl_gcc.mak
+
+%:
+	dh $@
+
+override_dh_auto_build:
+# Skip 7zz, provided by the '7zip' package
+#	$(MAKE) -C CPP/7zip/Bundles/Alone2 -f $(m) \
+#		CROSS_COMPILE="$(DEB_HOST_GNU_TYPE)-" \
+#		DISABLE_RAR=1 \
+#		DEB_CFLAGS="$(CFLAGS) -pipe" \
+#		DEB_CXXFLAGS="$(CXXFLAGS) -pipe" \
+#		DEB_CPPFLAGS="$(CPPFLAGS)" \
+#		DEB_LDFLAGS="$(LDFLAGS) -pipe"
+	$(MAKE) -C CPP/7zip/Bundles/Format7zF -f $(m) \
+		CROSS_COMPILE="$(DEB_HOST_GNU_TYPE)-" \
+		DISABLE_RAR_COMPRESS=1 \
+		DEB_CFLAGS="$(CFLAGS) -pipe" \
+		DEB_CXXFLAGS="$(CXXFLAGS) -pipe" \
+		DEB_CPPFLAGS="$(CPPFLAGS)" \
+		DEB_LDFLAGS="$(LDFLAGS) -pipe"
+	$(MAKE) -C CPP/7zip/UI/Console -f $(m) \
+		CROSS_COMPILE="$(DEB_HOST_GNU_TYPE)-" \
+		DISABLE_RAR=1 \
+		DEB_CFLAGS="$(CFLAGS) -pipe" \
+		DEB_CXXFLAGS="$(CXXFLAGS) -pipe" \
+		DEB_CPPFLAGS="$(CPPFLAGS)" \
+		DEB_LDFLAGS="$(LDFLAGS) -pipe"
+	$(MAKE) -C CPP/7zip/Bundles/SFXCon -f $(m) \
+		CROSS_COMPILE="$(DEB_HOST_GNU_TYPE)-" \
+		DISABLE_RAR=1 \
+		DEB_CFLAGS="$(CFLAGS) -pipe" \
+		DEB_CXXFLAGS="$(CXXFLAGS) -pipe" \
+		DEB_CPPFLAGS="$(CPPFLAGS)" \
+		DEB_LDFLAGS="$(LDFLAGS) -pipe"
+	$(MAKE) -C CPP/7zip/Bundles/Alone -f $(m) \
+		CROSS_COMPILE="$(DEB_HOST_GNU_TYPE)-" \
+		DISABLE_RAR=1 \
+		DEB_CFLAGS="$(CFLAGS) -pipe" \
+		DEB_CXXFLAGS="$(CXXFLAGS) -pipe" \
+		DEB_CPPFLAGS="$(CPPFLAGS)" \
+		DEB_LDFLAGS="$(LDFLAGS) -pipe"
+	$(MAKE) -C CPP/7zip/Bundles/Alone7z -f $(m) \
+		CROSS_COMPILE="$(DEB_HOST_GNU_TYPE)-" \
+		DISABLE_RAR=1 \
+		DEB_CFLAGS="$(CFLAGS) -pipe" \
+		DEB_CXXFLAGS="$(CXXFLAGS) -pipe" \
+		DEB_CPPFLAGS="$(CPPFLAGS)" \
+		DEB_LDFLAGS="$(LDFLAGS) -pipe"
+
+override_dh_auto_clean:
+	$(MAKE) -C CPP/7zip/Bundles/Alone2    -f $(m) clean
+	$(MAKE) -C CPP/7zip/Bundles/Format7zF -f $(m) clean
+	$(MAKE) -C CPP/7zip/UI/Console        -f $(m) clean
+	$(MAKE) -C CPP/7zip/Bundles/Alone7z   -f $(m) clean
+	$(MAKE) -C CPP/7zip/Bundles/SFXCon    -f $(m) clean
+	$(MAKE) -C CPP/7zip/Bundles/Alone     -f $(m) clean
+	$(MAKE) -C CPP/7zip/Bundles/Alone7z   -f $(m) clean
+
+override_dh_installdocs:
+	dh_installdocs --link-doc=p7zip
+#	p7zip compat - move documents to DOC/
+	mkdir -p -m 755 debian/p7zip-full/usr/share/doc/p7zip/DOC/
+	cd debian/p7zip-full/usr/share/doc/p7zip && mv `cat ../../../../../p7zip-full.docs | cut -b5-` DOC/
