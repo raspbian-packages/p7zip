@@ -1,0 +1,61 @@
+Subject: Mimic p7zip symlinks handling
+Reviewed-by: Sylvain Beucler <beuc@debian.org>
+Last-Update: 2026-03-03
+Forwarded: not-needed
+
+p7zip defaults to preserving symlinks (unlike 7-Zip), and introduced
+an undocumented '-l' option (dereference symlinks, which is rejected
+by standard 7zip).
+
+7-Zip has '-snl' to preserve symlinks, but it's no-op in p7zip AFAICS.
+
+Some tools (e.g. engrampa #1061510) use '-l' and fail is not present.
+
+To improve compatibility with p7zip, preserve symlinks by default,
+accept '-l' to dereference them, make '-snl' no-op.
+
+Note: '-snl-' reverses '-snl' in 7-Zip -- but both are still no-op
+with this patch.
+
+Note: p7zip does dereference symlinks when passing them directly as
+CLI arguments (e.g. '7z a test.7z test/symlink'; as opposed to:
+indirectly within a directory '7z a test.7z test/'), while 7-Zip would
+preserve such symlinks with '-snl'. This patch does not address this
+discrepancy.
+
+Index: p7zip/CPP/7zip/UI/Common/ArchiveCommandLine.cpp
+===================================================================
+--- p7zip.orig/CPP/7zip/UI/Common/ArchiveCommandLine.cpp
++++ p7zip/CPP/7zip/UI/Common/ArchiveCommandLine.cpp
+@@ -210,6 +210,9 @@ enum Enum
+   #ifndef Z7_NO_CRYPTO
+   , kPassword
+   #endif
++
++  // p7zip compat
++  , kNoSymLinks
+ };
+ 
+ }
+@@ -361,6 +364,9 @@ static const CSwitchForm kSwitchForms[]
+   #ifndef Z7_NO_CRYPTO
+   , { "p", SWFRM_STRING }
+   #endif
++
++  // p7zip compat
++  , { "l", SWFRM_SIMPLE }
+ };
+ 
+ static const char * const kUniversalWildcard = "*";
+@@ -1475,7 +1481,10 @@ void CArcCmdLineParser::Parse2(CArcCmdLi
+ 
+   SetBoolPair(parser, NKey::kAltStreams, options.AltStreams);
+   SetBoolPair(parser, NKey::kHardLinks, options.HardLinks);
+-  SetBoolPair(parser, NKey::kSymLinks, options.SymLinks);
++  // p7zip compat
++  //SetBoolPair(parser, NKey::kSymLinks, options.SymLinks);
++  options.SymLinks.SetTrueTrue();
++  if (parser[NKey::kNoSymLinks].ThereIs) options.SymLinks.SetVal_as_Defined(false);
+   
+   SetBoolPair(parser, NKey::kStoreOwnerId, options.StoreOwnerId);
+   SetBoolPair(parser, NKey::kStoreOwnerName, options.StoreOwnerName);
