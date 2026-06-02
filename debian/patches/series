@@ -1,0 +1,7 @@
+0001-Accept-Debian-build-flags.patch
+0002-Use-getcwd-3-POSIX-extension-to-avoid-PATH_MAX-macro.patch
+0003-Disable-local-echo-display-when-in-input-passwords-C.patch
+0005-Add-note-for-unexpected-recursive-operations-behavio.patch
+p7zip-compat-version-output.patch
+p7zip-compat-symlinks.patch
+p7zip-compat-utf16.patch
