@@ -1,0 +1,40 @@
+Subject: Mimic p7zip -utf16/-no-utf16 options
+Reviewed-by: Sylvain Beucler <beuc@debian.org>
+Last-Update: 2026-03-04
+Forwarded: not-needed
+
+p7zip uses the current locale to determine the filesystem encoding,
+and introduces -utf16 and -no-utf16 to override this behavior.
+-no-utf16 generate non-standard archives that only meant for private
+use.
+
+7-Zip assumes that the filesystem uses UTF-8, which is normally the
+case in modern GNU/Linux systems.
+
+(Both approaches make sense.)
+
+To improve compatibility with p7zip, add -utf16 and -no-utf16 as
+no-op.
+
+Index: p7zip/CPP/7zip/UI/Common/ArchiveCommandLine.cpp
+===================================================================
+--- p7zip.orig/CPP/7zip/UI/Common/ArchiveCommandLine.cpp
++++ p7zip/CPP/7zip/UI/Common/ArchiveCommandLine.cpp
+@@ -215,6 +215,8 @@ enum Enum
+ 
+   // p7zip compat
+   , kNoSymLinks
++  , kUTF16
++  , kNoUTF16
+ };
+ 
+ }
+@@ -370,6 +372,8 @@ static const CSwitchForm kSwitchForms[]
+ 
+   // p7zip compat
+   , { "l", SWFRM_SIMPLE }
++  , { "utf16", SWFRM_SIMPLE }
++  , { "no-utf16", SWFRM_SIMPLE }
+ };
+ 
+ static const char * const kUniversalWildcard = "*";
