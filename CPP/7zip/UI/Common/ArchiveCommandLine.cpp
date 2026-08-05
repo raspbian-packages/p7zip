@@ -215,6 +215,8 @@ enum Enum
 
   // p7zip compat
   , kNoSymLinks
+  , kUTF16
+  , kNoUTF16
 };
 
 }
@@ -370,6 +372,8 @@ static const CSwitchForm kSwitchForms[] =
 
   // p7zip compat
   , { "l", SWFRM_SIMPLE }
+  , { "utf16", SWFRM_SIMPLE }
+  , { "no-utf16", SWFRM_SIMPLE }
 };
 
 static const char * const kUniversalWildcard = "*";
