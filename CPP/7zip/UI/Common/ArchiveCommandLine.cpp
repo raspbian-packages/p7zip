@@ -212,6 +212,9 @@ enum Enum
   #ifndef Z7_NO_CRYPTO
   , kPassword
   #endif
+
+  // p7zip compat
+  , kNoSymLinks
 };
 
 }
@@ -364,6 +367,9 @@ static const CSwitchForm kSwitchForms[] =
   #ifndef Z7_NO_CRYPTO
   , { "p", SWFRM_STRING }
   #endif
+
+  // p7zip compat
+  , { "l", SWFRM_SIMPLE }
 };
 
 static const char * const kUniversalWildcard = "*";
@@ -1581,7 +1587,10 @@ void CArcCmdLineParser::Parse2(CArcCmdLineOptions &options)
 
   SetBoolPair(parser, NKey::kAltStreams, options.AltStreams);
   SetBoolPair(parser, NKey::kHardLinks, options.HardLinks);
-  SetBoolPair(parser, NKey::kSymLinks, options.SymLinks);
+  // p7zip compat
+  //SetBoolPair(parser, NKey::kSymLinks, options.SymLinks);
+  options.SymLinks.SetTrueTrue();
+  if (parser[NKey::kNoSymLinks].ThereIs) options.SymLinks.SetVal_as_Defined(false);
   
   SetBoolPair(parser, NKey::kStoreOwnerId, options.StoreOwnerId);
   SetBoolPair(parser, NKey::kStoreOwnerName, options.StoreOwnerName);
