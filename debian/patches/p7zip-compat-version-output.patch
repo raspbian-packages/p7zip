@@ -1,0 +1,109 @@
+Subject: Mimic p7zip version output
+Reviewed-by: Sylvain Beucler <beuc@debian.org>
+Last-Update: 2026-06-01
+Forwarded: not-needed
+
+Some tools (e.g. ark #1064227) are confused by the new-style 7-Zip
+version output.
+
+To improve compatibility with p7zip, use old-style version output.
+Also reproduce bug where 7zr uses '7za' in its output.
+
+Index: p7zip/CPP/7zip/UI/Console/Main.cpp
+===================================================================
+--- p7zip.orig/CPP/7zip/UI/Console/Main.cpp
++++ p7zip/CPP/7zip/UI/Console/Main.cpp
+@@ -3,6 +3,7 @@
+ #include "StdAfx.h"
+ 
+ #include "../../../Common/MyWindows.h"
++#include "../../../Windows/SystemInfo.h"
+ 
+ #ifdef _WIN32
+ 
+@@ -112,8 +113,8 @@ DECLARE_AND_SET_CLIENT_VERSION_VAR
+   #define PROG_POSTFIX      "z"
+   #define PROG_POSTFIX_2  " (z)"
+ #elif defined(Z7_PROG_VARIANT_R)
+-  #define PROG_POSTFIX      "r"
+-  #define PROG_POSTFIX_2  " (r)"
++  #define PROG_POSTFIX      "a"
++  #define PROG_POSTFIX_2  " (a)"
+ #elif defined(Z7_PROG_VARIANT_A) || !defined(Z7_EXTERNAL_CODECS)
+   #define PROG_POSTFIX      "a"
+   #define PROG_POSTFIX_2  " (a)"
+@@ -125,7 +126,12 @@ DECLARE_AND_SET_CLIENT_VERSION_VAR
+ 
+ static const char * const kCopyrightString = "\n7-Zip"
+   PROG_POSTFIX_2
+-  " " MY_VERSION_CPU
++#ifdef MY_CPU_64BIT
++" [64]"
++#else
++" [32]"
++#endif
++  " " MY_VERSION
+   " : " MY_COPYRIGHT_DATE "\n";
+ 
+ static const char * const kHelpString =
+@@ -377,13 +383,59 @@ static void ShowProgInfo(CStdOutStream *
+ }
+ #endif
+ 
++void showP7zipInfo(CStdOutStream *so)
++{
++  // Example output from p7zip:
++  // p7zip Version 16.02 (locale=fr_FR.UTF-8,Utf16=on,HugeFiles=on,64 bits,2 CPUs Intel(R) Core(TM) i5-8350U CPU @ 1.70GHz (806EA),ASM,AES-NI)
++
++  // No more locale-based limitation for UTF-16 support
++  int global_use_utf16_conversion = 1;
++
++  if (!so)
++    return;
++
++  AString cpu_name, registers;
++  GetCpuName_MultiLine(cpu_name, registers);
++  cpu_name.Replace('\n', ' ');
++  cpu_name.Trim();
++
++  int bits = int(sizeof(void *)) * 8;
++
++  *so << "p7zip Version " << "16.02" << " (locale=" << GetLocale() <<",Utf16=";
++  if (global_use_utf16_conversion) *so << "on";
++  else                             *so << "off";
++  *so << ",HugeFiles=";
++  if (sizeof(off_t) >= 8) *so << "on,";
++  else                    *so << "off,";
++  *so << bits << " bits,";
++  int nbcpu = NWindows::NSystem::GetNumberOfProcessors();
++  if (nbcpu > 1) *so << nbcpu << " CPUs ";
++  else           *so << nbcpu << " CPU ";
++  *so << cpu_name;
++
++#ifdef Z7_7ZIP_ASM
++{
++  const char * txt =",ASM";
++  #if (defined MY_CPU_X86_OR_AMD64 || defined(MY_CPU_ARM_OR_ARM64))
++  if (CPU_IsSupported_AES()) { txt =",ASM,AES-NI"; }
++  #endif
++  *so << txt;
++}
++#endif
++    *so << ")\n";
++
++}
++
+ static void ShowCopyrightAndHelp(CStdOutStream *so, bool needHelp)
+ {
+   if (!so)
+     return;
+   *so << kCopyrightString;
+   // *so << "# CPUs: " << (UInt64)NWindows::NSystem::GetNumberOfProcessors() << endl;
+-  ShowProgInfo(so);
++  // p7zip compat
++  // no-op use of ShowProgInfo (to avoid compilation warning-as-error)
++  ShowProgInfo(NULL);
++  showP7zipInfo(so);
+   *so << endl;
+   if (needHelp)
+     *so << kHelpString;

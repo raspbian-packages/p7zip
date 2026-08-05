@@ -1,0 +1,32 @@
+#!/bin/bash
+
+# stop and fail on error
+set -e
+
+cd $AUTOPKGTEST_TMP
+
+echo
+echo "[compat-version-output]"
+7z | grep -F 'p7zip Version 16.02'
+7z -h | grep -E '7-Zip \[(32|64)\]'
+7zr -h | grep -E '7-Zip \(a\) \[(32|64)\]'
+echo "OK"
+
+echo
+echo "[compat-symlinks]"
+# symlinks by default, -l to dereference
+mkdir -p symlinks
+echo "hello, world" > symlinks/a
+ln -nfs a symlinks/b
+7z a      test-symlinks.7z symlinks/ > /dev/null
+7z l -slt test-symlinks.7z symlinks/b | grep -E '^Attributes = A_? l'
+7z a -l   test-nosymlinks.7z symlinks/ > /dev/null
+7z l -slt test-nosymlinks.7z symlinks/b | grep -E '^Attributes = A_? -'
+echo "OK"
+
+echo
+echo "[compat-utf16]"
+# accepts -utf16 and -no-utf16 as valid options
+7z a -utf16    test-utf16-options.7z /bin/ls > /dev/null
+7z a -no-utf16 test-utf16-options.7z /bin/ls > /dev/null
+echo "OK"
